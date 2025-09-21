@@ -1,66 +1,57 @@
-# https://developer.android.com/tools/variables
-#
+# Android development environment setup for Zsh
+export ANDROID_BASE_DIR="${HOME}/Android"
+export ANDROID_HOME="${ANDROID_BASE_DIR}/Sdk"  # SDK tools path
+# export ANDROID_AVD_HOME="${ANDROID_BASE_DIR}/.android/avd"  # Explicit AVD path
+export FLUTTER_ROOT="${ANDROID_BASE_DIR}/flutter"
+export ANDROID_SDK_ROOT="${ANDROID_HOME}"
 
-# todo: write a tool that uses sdkmanager to
-# to manage android-sdk instead of Android-studio
+# Helper function to safely add directories to PATH
+android_add_to_path() {
+  local dir="$1"
+  if [[ -d "$dir" ]] && [[ ":${PATH}:" != *":${dir}:"* ]]; then
+    export PATH="${dir}:${PATH}"
+  fi
+}
 
-
-# INFO: Android SDK environment variables
-
-export ANDROID_BASE_DIR="$HOME/Android"
-
+# Set Android SDK environment variables
 set_android_sdk_env_var() {
-  if [ -d "$ANDROID_SDK_HOME" ]; then
+  if [[ -d "${ANDROID_HOME}" ]]; then
 
-    ## ANDROID_HOME
-    ### Sets the path to the SDK installation directory.
-    if [ -d "$ANDROID_SDK_HOME/Sdk" ]; then
-      export ANDROID_HOME="$ANDROID_SDK_HOME/Sdk"
+  #
+    # Add Android tools to PATH
+    android_add_to_path "${ANDROID_HOME}/emulator"
+    android_add_to_path "${ANDROID_HOME}/platform-tools"
+    android_add_to_path "${ANDROID_HOME}/tools/bin"
 
-      # TODO: check if wireless debugging not enabling bcz of platform-tools
-      export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin"
-
-      # for compatibility
-      export ANDROID_SDK_ROOT="$ANDROID_HOME"  #WARN: Deprecated but required for some legacy tools
-
-    fi
-
-    ## ANDROID_USER_HOME
-    ### Sets the path to the user preferences directory
-    ### for tools that are part of the Android SDK. Defaults to $HOME/.android/.
-    export ANDROID_USER_HOME="$ANDROID_SDK_HOME/.android"
-
-  fi
-}
-
-set_flutter_path() {
-  # Check both locations
-  if [ -d "$ANDROID_BASE_DIR/Flutter/bin" ]; then
-    export PATH="$PATH:$ANDROID_BASE_DIR/Flutter/bin"
-  elif [ -d "$HOME/flutter/bin" ]; then
-    export PATH="$PATH:$HOME/flutter/bin"
-  fi
-
-  ## flutterfire_cli
-  if [ -d "$HOME/.pub-cache/bin" ]; then
-    export PATH="$PATH":"$HOME/.pub-cache/bin"
-  fi
-}
-
-# Function to set CHROME_EXECUTABLE
-set_chrome_executable() {
-    local preferred_browsers=("brave" "firefox" "x-www-browser")
-    for browser in "${preferred_browsers[@]}"; do
-        if command -v "$browser" &> /dev/null; then
-            export CHROME_EXECUTABLE=$(command -v "$browser")
-            return
+    # Add cmdline-tools (modern structure)
+    local cmdline_tools_dir="${ANDROID_HOME}/cmdline-tools/latest/bin"
+    if [[ -d "$cmdline_tools_dir" ]]; then
+      android_add_to_path "$cmdline_tools_dir"
+    else
+      # Fallback to legacy cmdline-tools structure
+      if [[ -d "${ANDROID_HOME}/cmdline-tools" ]]; then
+        local legacy_tools_dir=$(find "${ANDROID_HOME}/cmdline-tools" -maxdepth 1 -name "*" -type d | sort -r | head -n 1)
+        if [[ -n "$legacy_tools_dir" ]]; then
+          android_add_to_path "$legacy_tools_dir/bin"
         fi
-    done
-    local ERROR_MSG="No browser found. Please install Brave, Firefox, or set x-www-browser."
-    echo "$ERROR_MSG"
+      fi
+    fi
+  fi
 }
 
+# Set Flutter path (unchanged)
+set_flutter_path() {
+  if [[ -d "${FLUTTER_ROOT}/bin" ]]; then
+    android_add_to_path "${FLUTTER_ROOT}/bin"
+  fi
+  if [[ -d "${HOME}/.pub-cache/bin" ]]; then
+    android_add_to_path "${HOME}/.pub-cache/bin"
+  fi
+  if [[ -d "${FLUTTER_ROOT}/bin/cache/dart-sdk/bin" ]]; then
+    android_add_to_path "${FLUTTER_ROOT}/bin/cache/dart-sdk/bin"
+  fi
+}
+
+# Initialize
 set_android_sdk_env_var
 set_flutter_path
-set_chrome_executable
-
