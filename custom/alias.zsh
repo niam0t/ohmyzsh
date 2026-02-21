@@ -8,7 +8,7 @@ alias_if_available() {
         alias "$alias_name"="$target_command $extra_args"
         return 0
     else
-        echo "Note: $target_command not found, skipping alias '$alias_name'"
+        # echo "Note: $target_command not found, skipping alias '$alias_name'"
         return 1
     fi
 }
