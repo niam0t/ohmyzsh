@@ -13,5 +13,5 @@ alias_if_available() {
     fi
 }
 
-# alias_if_available nano nvim "--clean"
+alias_if_available nano nvim "--clean"
 # alias_if_available unzip unar 
