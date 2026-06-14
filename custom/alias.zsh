@@ -1,1 +1,2 @@
-alias unzip=unar
+# alias unzip=unar
+# conda=__conda_exe

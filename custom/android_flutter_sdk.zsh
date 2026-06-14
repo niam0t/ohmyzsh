@@ -1,67 +1,71 @@
-# https://developer.android.com/tools/variables
-#
+# entry point
+__main__(){
+  configure_android_environment
+  configure_flutter_environment
+}
+ANDROID_BASE_DIR="$HOME/Android"
+ANDROID_SDK_HOME="$ANDROID_BASE_DIR"
+ANDROID_SDK_DIR="$ANDROID_SDK_HOME/Sdk"
 
-# todo: write a tool that uses sdkmanager to
-# to manage android-sdk instead of Android-studio
+
+path_add_if_exists() {
+  local target_dir="$1"
+  [[ -z "$target_dir" || ! -d "$target_dir" ]] && return
+
+  case ":$PATH:" in
+    *":$target_dir:"*) ;;
+    *) export PATH="$PATH:$target_dir" ;;
+  esac
+}
 
 
-# INFO: Android SDK environment variables
+configure_browser_executable() {
+  [[ -n "$CHROME_EXECUTABLE" ]] && return
 
-export ANDROID_BASE_DIR="$HOME/Android"
-export ANDROID_SDK_HOME="$HOME/Android"
+  local preferred_browser_list=("brave" "brave-browser" "brave-browser-stable" "firefox" "x-www-browser")
 
-set_android_sdk_env_var() {
-  if [ -d "$ANDROID_SDK_HOME" ]; then
-
-    ## ANDROID_HOME
-    ### Sets the path to the SDK installation directory.
-    if [ -d "$ANDROID_SDK_HOME/Sdk" ]; then
-      export ANDROID_HOME="$ANDROID_SDK_HOME/Sdk"
-
-      # TODO: check if wireless debugging not enabling bcz of platform-tools
-      export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin"
-
-      # for compatibility
-      export ANDROID_SDK_ROOT="$ANDROID_HOME"  #WARN: Deprecated but required for some legacy tools
-
+  for browser_name in "${preferred_browser_list[@]}"; do
+    if command -v "$browser_name" >/dev/null 2>&1; then
+      export CHROME_EXECUTABLE="$(command -v "$browser_name")"
+      return
     fi
-
-    ## ANDROID_USER_HOME
-    ### Sets the path to the user preferences directory
-    ### for tools that are part of the Android SDK. Defaults to $HOME/.android/.
-    export ANDROID_USER_HOME="$ANDROID_SDK_HOME/.android"
-
-  fi
+  done
 }
 
-set_flutter_path() {
-  # Check both locations
-  if [ -d "$ANDROID_BASE_DIR/Flutter/bin" ]; then
-    export PATH="$PATH:$ANDROID_BASE_DIR/Flutter/bin"
-  elif [ -d "$HOME/flutter/bin" ]; then
-    export PATH="$PATH:$HOME/flutter/bin"
-  fi
 
-  ## flutterfire_cli
-  if [ -d "$HOME/.pub-cache/bin" ]; then
-    export PATH="$PATH":"$HOME/.pub-cache/bin"
-  fi
+configure_flutter_environment() {
+  local flutter_primary_bin="$ANDROID_BASE_DIR/flutter/bin"
+  local flutter_fallback_bin="$HOME/flutter/bin"
+  local dart_sdk_bin="$ANDROID_BASE_DIR/flutter/bin/cache/dart-sdk/bin"
+  local pub_cache_bin="$HOME/.pub-cache/bin"
+
+  [[ -d "$flutter_primary_bin" ]] && path_add_if_exists "$flutter_primary_bin"
+  [[ -d "$flutter_fallback_bin" ]] && path_add_if_exists "$flutter_fallback_bin"
+
+  path_add_if_exists "$dart_sdk_bin"
+  path_add_if_exists "$pub_cache_bin"
+
+  configure_browser_executable
 }
 
-# Function to set CHROME_EXECUTABLE
-set_chrome_executable() {
-    local preferred_browsers=("brave" "firefox" "x-www-browser")
-    for browser in "${preferred_browsers[@]}"; do
-        if command -v "$browser" &> /dev/null; then
-            export CHROME_EXECUTABLE=$(command -v "$browser")
-            return
-        fi
-    done
-    local ERROR_MSG="No browser found. Please install Brave, Firefox, or set x-www-browser."
-    echo "$ERROR_MSG"
+
+configure_android_environment() {
+  [[ ! -d "$ANDROID_SDK_DIR" ]] && return
+
+  export ANDROID_HOME="$ANDROID_SDK_DIR"
+  export ANDROID_SDK_ROOT="$ANDROID_SDK_DIR"
+  # export ANDROID_USER_HOME="$ANDROID_SDK_HOME/.android"
+
+  local emulator_bin="$ANDROID_HOME/emulator"
+  local platform_tools_bin="$ANDROID_HOME/platform-tools"
+  local tools_bin="$ANDROID_HOME/tools"
+  local tools_legacy_bin="$ANDROID_HOME/tools/bin"
+
+  path_add_if_exists "$emulator_bin"
+  path_add_if_exists "$platform_tools_bin"
+  path_add_if_exists "$tools_bin"
+  path_add_if_exists "$tools_legacy_bin"
+
 }
 
-set_android_sdk_env_var
-set_flutter_path
-set_chrome_executable
-
+__main__
