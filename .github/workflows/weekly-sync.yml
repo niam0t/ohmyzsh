@@ -5,6 +5,9 @@ on:
     - cron: "0 6 * * 5"
   workflow_dispatch: # Optional: Allows manual triggering
 
+permissions: 
+  contents: write
+  
 jobs:
   sync-upstream:
     runs-on: ubuntu-latest
