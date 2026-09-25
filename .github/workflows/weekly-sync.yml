@@ -1,9 +1,8 @@
 name: Weekly Sync with Upstream
 on:
   schedule:
-    # Runs at 06:00 UTC every Friday
     - cron: "0 6 * * 5"
-  workflow_dispatch: # Optional: Allows manual triggering
+  workflow_dispatch:
 
 permissions: 
   contents: write
@@ -17,6 +16,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: arch
+          token: ${{ secrets.SYNC_TOKEN }}
 
       - name: Add upstream repository
         run: |
@@ -28,11 +28,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git checkout arch
           git pull origin arch
           git merge upstream/master --no-edit
-          git push origin arch --force-with-lease
-
+          git push origin arch
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
+          GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
