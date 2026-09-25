@@ -4,6 +4,9 @@ on:
     # Runs at 06:00 UTC every Friday
     - cron: "0 6 * * 5"
   workflow_dispatch: # Optional: Allows manual triggering
+
+permissions: 
+  contents: write
   
 jobs:
   sync-upstream:
@@ -13,6 +16,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: arch
 
       - name: Add upstream repository
         run: |
