@@ -4,8 +4,6 @@ on:
     # Runs at 06:00 UTC every Friday
     - cron: "0 6 * * 5"
   workflow_dispatch: # Optional: Allows manual triggering
-
-
   
 jobs:
   sync-upstream:
@@ -27,8 +25,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git checkout arch
+          git pull origin arch
           git merge upstream/master --no-edit
           git push origin arch --force-with-lease
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
