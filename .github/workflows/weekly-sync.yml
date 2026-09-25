@@ -6,9 +6,6 @@ on:
   workflow_dispatch: # Optional: Allows manual triggering
 
 
-permissions: 
-  contents: write
-  workflows: write
   
 jobs:
   sync-upstream:
@@ -33,4 +30,4 @@ jobs:
           git merge upstream/master --no-edit
           git push origin arch
         env:
-          GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
