@@ -23,14 +23,12 @@ jobs:
           git remote add upstream https://github.com/ohmyzsh/ohmyzsh.git
           git fetch upstream
 
-      - name: Merge upstream changes
+      - name: Merge upstream changes (keep your changes)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git pull origin arch
-          git merge upstream/master --no-edit
+          git merge upstream/master --no-edit -X ours
           git push origin arch --force-with-lease
-      
         env:
           GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
