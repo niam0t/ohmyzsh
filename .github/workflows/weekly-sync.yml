@@ -30,6 +30,7 @@ jobs:
 
           git pull origin arch
           git merge upstream/master --no-edit
-          git push origin arch
+          git push origin arch --force-with-lease
+      
         env:
           GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
