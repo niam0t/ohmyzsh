@@ -28,7 +28,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # Merge upstream, keeping your changes in case of conflicts
           git merge upstream/master --no-edit -X ours
+          
+          # Fetch latest remote state before pushing
+          git fetch origin arch
+          
+          # Rebase on latest remote to avoid non-fast-forward errors
+          git rebase origin/arch
+          
+          # Push with force-with-lease for safety
           git push origin arch --force-with-lease
         env:
           GITHUB_TOKEN: ${{ secrets.SYNC_TOKEN }}
